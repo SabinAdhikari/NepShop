@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nepshop</title>
+  <link rel="stylesheet" href="./src/output.css">
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
+    integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw=="
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+
+<body>
+  <!-- Navigation Bar -->
+
+
+  <div class="Notify">
+    <marquee behavior="scroll" direction="right">
+      <p>This Website is under Maintainance.</p>
+    </marquee>
+  </div>
+
+  <div class="nav-bar">
+    <div class="logo">
+      <!-- <img src="Images/Myntra  Logo.png" alt="Myntra" /> -->
+      <h1>Nepshop</h1>
+    </div>
+    <div class="nav-container">
+      <a href="#">Men</a>
+      <a href="#">Women</a>
+      <a href="#">Kids</a>
+      <a href="#">Home</a>
+      <a href="#">Beauty</a>
+      <a href="#">Gadgets</a>
+    </div>
+    <div class="search">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input class="input" type="text" placeholder="Search" />
+    </div>
+    <div class="profile">
+      <div class="profile-item">
+        <i class="fa-solid fa-circle-user"></i>
+        <p>Profile</p>
+      </div>
+
+    </div>
+  </div>
+
+  <main>
+    <!-- <section class="Banner">
+      <p>UPTO 500RS OFF</p>
+    </section> -->
+    <section class="hero">
+      <div class="hero-content">
+        <p class="sale-label">Big Fashion Festival</p>
+        <h1>Fresh styles, sharp prices</h1>
+        <p class="hero-copy">
+          Explore everyday fashion, festive fits, beauty picks and home
+          essentials.
+        </p>
+        <button class="shop-now rounded-2xl bg-pink-500 py-0.5 px-0.5">Shop Now</button>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-heading">
+        <h2>Shop by category</h2>
+        <a href="#">View all</a>
+      </div>
+      <div class="category-grid">
+        <div class="category-card">
+          <img src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=600&q=80"
+            alt="Men's fashion" />
+          <h3>Men</h3>
+          <p>Up to 60% off</p>
+        </div>
+
+
+        <div class="category-card">
+          <img src="https://images.unsplash.com/photo-1485968579580-b6d095142e6e?auto=format&fit=crop&w=600&q=80"
+            alt="Women's fashion" />
+          <h3>Women</h3>
+          <p>Min. 50% off</p>
+        </div>
+        <div class="category-card">
+          <img src="https://images.unsplash.com/photo-1503919545889-aef636e10ad4?auto=format&fit=crop&w=600&q=80"
+            alt="Footwear" />
+          <h3>Footwear</h3>
+          <p>From Rs. 799</p>
+        </div>
+        <div class="category-card">
+          <img src="https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=600&q=80"
+            alt="Beauty products" />
+          <h3>Beauty</h3>
+          <p>Buy 1 get 1</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section deal-section">
+      <div class="section-heading">
+        <h2>Deals of the day</h2>
+        <a href="#">Explore</a>
+      </div>
+      <div class="product-grid">
+
+
+        <div class="product-card">
+          <img src="https://images.unsplash.com/photo-1523398002811-999ca8dec234?auto=format&fit=crop&w=600&q=80"
+            alt="Casual shirt" />
+          <div class="product-info">
+            <h3>Roadster</h3>
+            <p>Cotton casual shirt</p>
+            <strong>Rs. 899 <span>Rs. 1,999</span></strong>
+            <div class="btn3">
+              <button class="wishlist">Add to Wishlist</button>
+              <button class="Bag" onclick="increaseCart();">Add to Bag</button>
+              <div class="arrow-icon">
+                <i class="fa-solid fa-angle-right icon"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+
+
+        <div class="product-card">
+          <img src="https://images.unsplash.com/photo-1496747611176-843222e1e57c?auto=format&fit=crop&w=600&q=80"
+            alt="Summer dress" />
+          <div class="product-info">
+            <h3>DressBerry</h3>
+            <p>Printed summer dress</p>
+            <strong>Rs. 1,299 <span>Rs. 2,799</span></strong>
+            <div class="btn3">
+              <button class="wishlist">Add to Wishlist</button>
+              <button class="Bag">Add to Bag</button>
+              <div class="arrow-icon">
+                <i class="fa-solid fa-angle-right icon"></i>
+              </div>
+
+            </div>
+          </div>
+        </div>
+        <div class="product-card">
+          <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=600&q=80"
+            alt="Sneakers" />
+          <div class="product-info">
+            <h3>Nike</h3>
+            <p>Running sneakers</p>
+            <strong>Rs. 2,499 <span>Rs. 4,995</span></strong>
+            <div class="btn3">
+              <button class="wishlist">Add to Wishlist</button>
+              <button class="Bag">Add to Bag</button>
+
+
+              <div class="arrow-icon">
+                <i class="fa-solid fa-angle-right icon"></i>
+              </div>
+
+            </div>
+          </div>
+        </div>
+        <div class="product-card">
+          <img src="https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=600&q=80"
+            alt="Makeup kit" />
+          <div class="product-info">
+            <h3>Maybelline</h3>
+            <p>Beauty starter kit</p>
+            <strong>Rs. 699 <span>Rs. 1,499</span></strong>
+            <div class="btn3">
+              <button class="wishlist">Add to Wishlist</button>
+              <button class="Bag">Add to Bag</button>
+
+
+              <div class="arrow-icon">
+                <i class="fa-solid fa-angle-right icon"></i>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-grid">
+      <div>
+        <h3>Online Shopping</h3>
+      <a href="Container/Men.html">Men</a>
+      <a href="#">Women</a>
+      <a href="#">Kids</a>
+      <a href="#">Home</a>
+      <a href="#">Beauty</a>
+      <a href="#">Gadgets</a>
+      </div>
+      <div>
+        <h3>Customer Policies</h3>
+        <a href="#">Contact Us</a>
+        <a href="#">FAQ</a>
+        <a href="#">T&C</a>
+        <a href="#">Track Orders</a>
+        <a href="#">Returns</a>
+      </div>
+      <div>
+        <h3>Experience Myntra</h3>
+        <p>
+          Download the app for faster checkout, alerts and exclusive offers.
+        </p>
+        <div class="app-buttons">
+          <button><i class="fa-brands fa-google-play"></i> Play Store</button>
+          <button><i class="fa-brands fa-apple"></i> App Store</button>
+        </div>
+      </div>
+      <div>
+        <h3>Keep in touch</h3>
+        <div class="social">
+          <i class="fa-brands fa-facebook-f"></i>
+          <i class="fa-brands fa-instagram"></i>
+          <i class="fa-brands fa-x-twitter"></i>
+          <i class="fa-brands fa-youtube"></i>
+        </div>
+        <p><strong>100% original</strong> products from trusted brands.</p>
+      </div>
+
+      <div class="bell">
+        <i class="fa-solid fa-bell"></i>
+      </div>
+
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; Sabin Adhikari</p>
+      <p>@binsone</p>
+    </div>
+  </footer>
+  <script src="script.js"></script>
+</body>
+
+</html>
