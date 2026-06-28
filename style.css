@@ -52,6 +52,10 @@ body {
   display: block;
 }
 
+.log h1{
+  font-size: 15px;
+}
+
 .nav-container {
   min-height: 80px;
   display: flex;
@@ -147,8 +151,7 @@ body {
   font-size: 12px;
   color: #282c3f;
 }
-
-.profile {
+.Cart {
   flex: 0 0 auto;
   display: flex;
   align-items: center;
@@ -162,24 +165,57 @@ body {
   padding: 0 100px 0 100px;
 }
 
-.profile-item {
-  min-width: 42px;
+.Cart-item {
+  min-width: 48px;
+  min-height: 46px;
   position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 4px;
   color: #282c3f;
   cursor: pointer;
+  transition: color 0.2s ease;
 }
 
-.profile-item i {
-  font-size: 18px;
+.Cart-item i {
+  font-size: 20px;
 }
 
-.profile-item p {
-  font-size: 12px;
+.Cart-item p {
+  font-size: 15px;
   font-weight: 700;
+}
+
+.Cart-item:hover {
+  color: #ff3f6c;
+}
+
+.cartNumber {
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  position: absolute;
+  top: -7px;
+  right: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  background: linear-gradient(135deg, #ff3f6c, #ff8a00);
+  border: 2px solid #ffffff;
+  border-radius: 999px;
+  box-shadow: 0 4px 10px rgba(255, 63, 108, 0.35);
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1;
+  transform-origin: center;
+
+}
+
+.cartNumber.bump {
+  animation: cart-bump 0.25s ease;
 }
 
 .hero {
@@ -221,7 +257,7 @@ body {
   line-height: 1.5;
 }
 
-/* .shop-now {
+.shop-now {
   border: 0;
   padding: 14px 24px;
   color: #ffffff;
@@ -230,7 +266,7 @@ body {
   font-weight: 800;
   text-transform: uppercase;
   cursor: pointer;
-} */
+}
 
 .section {
   padding: 56px 100px 0;
@@ -271,7 +307,6 @@ body {
   overflow: hidden;
   cursor: pointer;
 }
-
 .category-card {
   position: relative;
   min-height: 320px;

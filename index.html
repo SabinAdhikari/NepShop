@@ -5,6 +5,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Nepshop</title>
+  <link rel="icon" href="favicon.ico">
+  <link href="https://cdn.jsdelivr.net/npm/flowbite@4.0.1/dist/flowbite.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="./src/output.css">
   <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
@@ -39,11 +41,15 @@
       <i class="fa-solid fa-magnifying-glass"></i>
       <input class="input" type="text" placeholder="Search" />
     </div>
-    <div class="profile">
-      <div class="profile-item">
-        <i class="fa-solid fa-circle-user"></i>
-        <p>Profile</p>
+    <div class="Cart">
+      <div class="Cart-item">
+        <span class="cartNumber">0</span>
+        <i class="fa-solid fa-cart-shopping"></i>
+        <p>cart</p>
+
       </div>
+
+<img class="w-10 h-10 p-1 rounded-full ring-2 ring-default" src="Images/profile.jpeg" alt="Bordered avatar">
 
     </div>
   </div>
@@ -60,7 +66,7 @@
           Explore everyday fashion, festive fits, beauty picks and home
           essentials.
         </p>
-        <button class="shop-now rounded-2xl bg-pink-500 py-0.5 px-0.5">Shop Now</button>
+        <button class="shop-now">Shop Now</button>
       </div>
     </section>
 
@@ -115,8 +121,7 @@
             <p>Cotton casual shirt</p>
             <strong>Rs. 899 <span>Rs. 1,999</span></strong>
             <div class="btn3">
-              <button class="wishlist">Add to Wishlist</button>
-              <button class="Bag" onclick="increaseCart();">Add to Bag</button>
+              <button class="Bag">Add to Bag</button>
               <div class="arrow-icon">
                 <i class="fa-solid fa-angle-right icon"></i>
               </div>
@@ -133,7 +138,6 @@
             <p>Printed summer dress</p>
             <strong>Rs. 1,299 <span>Rs. 2,799</span></strong>
             <div class="btn3">
-              <button class="wishlist">Add to Wishlist</button>
               <button class="Bag">Add to Bag</button>
               <div class="arrow-icon">
                 <i class="fa-solid fa-angle-right icon"></i>
@@ -150,7 +154,6 @@
             <p>Running sneakers</p>
             <strong>Rs. 2,499 <span>Rs. 4,995</span></strong>
             <div class="btn3">
-              <button class="wishlist">Add to Wishlist</button>
               <button class="Bag">Add to Bag</button>
 
 
@@ -169,7 +172,6 @@
             <p>Beauty starter kit</p>
             <strong>Rs. 699 <span>Rs. 1,499</span></strong>
             <div class="btn3">
-              <button class="wishlist">Add to Wishlist</button>
               <button class="Bag">Add to Bag</button>
 
 
