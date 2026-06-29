@@ -218,7 +218,7 @@ body {
   animation: cart-bump 0.25s ease;
 }
 
-.hero {
+/* .hero {
   min-height: 430px;
   margin: 32px 100px 0;
   display: flex;
@@ -255,7 +255,7 @@ body {
   color: #f4f4f5;
   font-size: 17px;
   line-height: 1.5;
-}
+} */
 
 .shop-now {
   border: 0;
