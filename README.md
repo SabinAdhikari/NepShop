@@ -1,20 +1,21 @@
 # Nepshop
 
-A full-stack e-commerce storefront built with React, Vite, Express, and PostgreSQL via Prisma.
+A full-stack e-commerce storefront built with React, Vite, Express, and Prisma.
 
 ## Stack
 
 - Frontend: React + Vite + React Router
 - Backend: Node.js + Express
-- Database: PostgreSQL + Prisma ORM
+- Database: SQLite for local development + Prisma ORM
 - Auth: JWT + bcrypt
 
 ## Local setup
 
 1. Install dependencies:
    npm install
-2. Create a PostgreSQL database named `nepshop`.
-3. Copy `.env.example` to `.env` and update values.
+2. Copy `.env.example` to `.env` and update values.
+   - Local default: `DATABASE_URL="file:./prisma/dev.db"`
+   - Production should use a managed relational database such as PostgreSQL.
 4. Run database migrations:
    npx prisma migrate dev --name init
 5. Seed sample data:
@@ -33,4 +34,8 @@ npm run build
 
 ## Notes
 
-This app is structured for deployment and can be extended with real payment integration, admin dashboards, and additional commerce features.
+The current local database is SQLite. Keep `DATABASE_URL`, `JWT_SECRET`, `CLIENT_URL`, and `VITE_API_URL` environment-specific for deployment.
+
+The default admin account is for development only and must be changed or removed before production use.
+
+Real payment integration is pending; do not treat the current checkout UI as proof of payment.

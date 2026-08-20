@@ -104,11 +104,112 @@ const orderSchema = z.object({
   paymentMethod: z.string().min(2),
 });
 
+const cartItemSchema = z.object({
+  productId: z.string().min(1),
+  quantity: z.number().int().min(1).max(99).default(1),
+});
+
+const cartQuantitySchema = z.object({
+  quantity: z.number().int().min(1).max(99),
+});
+
 const serializeProduct = (product) => ({
   ...product,
   price: Number(product.price),
   discountPrice: product.discountPrice ? Number(product.discountPrice) : null,
 });
+
+const publicUser = (user) => ({
+  id: user.id,
+  name: user.name,
+  email: user.email,
+  role: user.role,
+});
+
+const serializeCart = (cart) => {
+  const items =
+    cart?.items?.map((item) => {
+      const product = serializeProduct(item.product);
+      const unitPrice = product.discountPrice || product.price;
+
+      return {
+        id: item.id,
+        productId: item.productId,
+        quantity: item.quantity,
+        unitPrice,
+        lineTotal: unitPrice * item.quantity,
+        product,
+      };
+    }) || [];
+  const subtotal = items.reduce((sum, item) => sum + item.lineTotal, 0);
+  const shipping = subtotal === 0 ? 0 : subtotal > 1000 ? 0 : 120;
+
+  return {
+    id: cart?.id || null,
+    items,
+    subtotal,
+    shipping,
+    total: subtotal + shipping,
+  };
+};
+
+const serializeOrder = (order) => ({
+  id: order.id,
+  status: order.status,
+  paymentStatus: order.paymentStatus,
+  subtotal: Number(order.subtotal),
+  shipping: Number(order.shipping),
+  total: Number(order.total),
+  shippingAddress: JSON.parse(order.shippingAddress),
+  billingAddress: order.billingAddress ? JSON.parse(order.billingAddress) : null,
+  paymentMethod: order.paymentMethod,
+  createdAt: order.createdAt,
+  updatedAt: order.updatedAt,
+  items: order.orderItems.map((item) => ({
+    id: item.id,
+    productId: item.productId,
+    quantity: item.quantity,
+    unitPrice: Number(item.unitPrice),
+    lineTotal: Number(item.unitPrice) * item.quantity,
+    product: serializeProduct(item.product),
+  })),
+});
+
+async function getOrCreateCart(userId, client = prisma) {
+  const existing = await client.cart.findUnique({
+    where: { userId },
+    include: {
+      items: {
+        include: { product: { include: { category: true, images: true } } },
+        orderBy: { id: "asc" },
+      },
+    },
+  });
+
+  if (existing) return existing;
+
+  return client.cart.create({
+    data: { userId },
+    include: {
+      items: {
+        include: { product: { include: { category: true, images: true } } },
+        orderBy: { id: "asc" },
+      },
+    },
+  });
+}
+
+async function getCartForUser(userId, client = prisma) {
+  return client.cart.findUnique({
+    where: { userId },
+    include: {
+      items: {
+        include: { product: { include: { category: true, images: true } } },
+        orderBy: { id: "asc" },
+      },
+    },
+  });
+}
 
 app.get("/api/health", (req, res) => {
   res.json({ ok: true, message: "Nepshop API is running" });
@@ -203,6 +304,245 @@ app.post("/api/auth/login", async (req, res) => {
   }
 });
 
+app.get("/api/auth/me", authMiddleware, async (req, res) => {
+  res.json({ user: publicUser(req.user) });
+});
+
+app.get("/api/cart", authMiddleware, async (req, res) => {
+  const cart = await getOrCreateCart(req.user.id);
+  res.json(serializeCart(cart));
+});
+
+app.post("/api/cart/items", authMiddleware, async (req, res) => {
+  try {
+    const parsed = cartItemSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ message: "Invalid cart item", issues: parsed.error.issues });
+    }
+
+    const { productId, quantity } = parsed.data;
+    const product = await prisma.product.findFirst({ where: { id: productId, active: true } });
+
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    const cart = await getOrCreateCart(req.user.id);
+    const existing = await prisma.cartItem.findUnique({
+      where: { cartId_productId: { cartId: cart.id, productId } },
+    });
+    const nextQuantity = (existing?.quantity || 0) + quantity;
+
+    if (nextQuantity > product.stock) {
+      return res.status(400).json({ message: `Only ${product.stock} item(s) available` });
+    }
+
+    if (existing) {
+      await prisma.cartItem.update({
+        where: { id: existing.id },
+        data: { quantity: nextQuantity },
+      });
+    } else {
+      await prisma.cartItem.create({
+        data: { cartId: cart.id, productId, quantity },
+      });
+    }
+
+    const updatedCart = await getCartForUser(req.user.id);
+    res.status(201).json(serializeCart(updatedCart));
+  } catch (error) {
+    console.error("Add cart item error:", error);
+    res.status(500).json({ message: "Unable to add item to cart" });
+  }
+});
+
+app.patch("/api/cart/items/:id", authMiddleware, async (req, res) => {
+  try {
+    const parsed = cartQuantitySchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ message: "Invalid quantity", issues: parsed.error.issues });
+    }
+
+    const cart = await getOrCreateCart(req.user.id);
+    const item = await prisma.cartItem.findFirst({
+      where: { id: req.params.id, cartId: cart.id },
+      include: { product: true },
+    });
+
+    if (!item) {
+      return res.status(404).json({ message: "Cart item not found" });
+    }
+
+    if (!item.product.active) {
+      return res.status(400).json({ message: "Product is no longer available" });
+    }
+
+    if (parsed.data.quantity > item.product.stock) {
+      return res.status(400).json({ message: `Only ${item.product.stock} item(s) available` });
+    }
+
+    await prisma.cartItem.update({
+      where: { id: item.id },
+      data: { quantity: parsed.data.quantity },
+    });
+
+    const updatedCart = await getCartForUser(req.user.id);
+    res.json(serializeCart(updatedCart));
+  } catch (error) {
+    console.error("Update cart item error:", error);
+    res.status(500).json({ message: "Unable to update cart item" });
+  }
+});
+
+app.delete("/api/cart/items/:id", authMiddleware, async (req, res) => {
+  try {
+    const cart = await getOrCreateCart(req.user.id);
+    const item = await prisma.cartItem.findFirst({
+      where: { id: req.params.id, cartId: cart.id },
+    });
+
+    if (!item) {
+      return res.status(404).json({ message: "Cart item not found" });
+    }
+
+    await prisma.cartItem.delete({ where: { id: item.id } });
+
+    const updatedCart = await getCartForUser(req.user.id);
+    res.json(serializeCart(updatedCart));
+  } catch (error) {
+    console.error("Remove cart item error:", error);
+    res.status(500).json({ message: "Unable to remove cart item" });
+  }
+});
+
+app.delete("/api/cart", authMiddleware, async (req, res) => {
+  try {
+    const cart = await getOrCreateCart(req.user.id);
+    await prisma.cartItem.deleteMany({ where: { cartId: cart.id } });
+    const updatedCart = await getCartForUser(req.user.id);
+    res.json(serializeCart(updatedCart));
+  } catch (error) {
+    console.error("Clear cart error:", error);
+    res.status(500).json({ message: "Unable to clear cart" });
+  }
+});
+
+app.post("/api/checkout", authMiddleware, async (req, res) => {
+  try {
+    const parsed = orderSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ message: "Invalid checkout data", issues: parsed.error.issues });
+    }
+
+    const result = await prisma.$transaction(async (tx) => {
+      const cart = await getCartForUser(req.user.id, tx);
+
+      if (!cart || cart.items.length === 0) {
+        const error = new Error("Your cart is empty");
+        error.status = 400;
+        throw error;
+      }
+
+      for (const item of cart.items) {
+        if (!item.product.active) {
+          const error = new Error(`${item.product.name} is no longer available`);
+          error.status = 400;
+          throw error;
+        }
+
+        if (item.quantity > item.product.stock) {
+          const error = new Error(`Only ${item.product.stock} ${item.product.name} item(s) available`);
+          error.status = 400;
+          throw error;
+        }
+      }
+
+      const subtotal = cart.items.reduce((sum, item) => {
+        const price = item.product.discountPrice || item.product.price;
+        return sum + price * item.quantity;
+      }, 0);
+      const shipping = subtotal === 0 ? 0 : subtotal > 1000 ? 0 : 120;
+      const total = subtotal + shipping;
+
+      for (const item of cart.items) {
+        const updated = await tx.product.updateMany({
+          where: {
+            id: item.productId,
+            active: true,
+            stock: { gte: item.quantity },
+          },
+          data: { stock: { decrement: item.quantity } },
+        });
+
+        if (updated.count !== 1) {
+          const error = new Error(`Insufficient stock for ${item.product.name}`);
+          error.status = 400;
+          throw error;
+        }
+      }
+
+      const order = await tx.order.create({
+        data: {
+          userId: req.user.id,
+          status: "PENDING",
+          paymentStatus: "PENDING",
+          subtotal,
+          shipping,
+          total,
+          shippingAddress: JSON.stringify(parsed.data.address),
+          paymentMethod: parsed.data.paymentMethod,
+          orderItems: {
+            create: cart.items.map((item) => ({
+              productId: item.productId,
+              quantity: item.quantity,
+              unitPrice: item.product.discountPrice || item.product.price,
+            })),
+          },
+        },
+        include: {
+          orderItems: { include: { product: { include: { images: true, category: true } } } },
+        },
+      });
+
+      await tx.cartItem.deleteMany({ where: { cartId: cart.id } });
+
+      return order;
+    });
+
+    res.status(201).json({ order: serializeOrder(result) });
+  } catch (error) {
+    console.error("Checkout error:", error);
+    res.status(error.status || 500).json({ message: error.status ? error.message : "Unable to place order" });
+  }
+});
+
+app.get("/api/orders", authMiddleware, async (req, res) => {
+  const orders = await prisma.order.findMany({
+    where: { userId: req.user.id },
+    include: {
+      orderItems: { include: { product: { include: { images: true, category: true } } } },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+
+  res.json({ items: orders.map(serializeOrder) });
+});
+
+app.get("/api/orders/:id", authMiddleware, async (req, res) => {
+  const order = await prisma.order.findFirst({
+    where: { id: req.params.id, userId: req.user.id },
+    include: {
+      orderItems: { include: { product: { include: { images: true, category: true } } } },
+    },
+  });
+
+  if (!order) {
+    return res.status(404).json({ message: "Order not found" });
+  }
+
+  res.json({ order: serializeOrder(order) });
+});
+
 app.get("/api/categories", async (req, res) => {
   const categories = await prisma.category.findMany({
     where: { active: true },
@@ -212,62 +552,69 @@ app.get("/api/categories", async (req, res) => {
 });
 
 app.get("/api/products", async (req, res) => {
-  const {
-    category,
-    search,
-    sort,
-    minPrice,
-    maxPrice,
-    featured,
-    page = 1,
-    limit = 8,
-  } = req.query;
-  const skip = (Number(page) - 1) * Number(limit);
+  try {
+    const {
+      category,
+      search,
+      sort,
+      minPrice,
+      maxPrice,
+      featured,
+      page = 1,
+      limit = 8,
+    } = req.query;
+    const normalizedPage = Math.max(Number(page) || 1, 1);
+    const normalizedLimit = Math.min(Math.max(Number(limit) || 8, 1), 48);
+    const skip = (normalizedPage - 1) * normalizedLimit;
 
-  const filters = {
-    active: true,
-    ...(category ? { category: { slug: category } } : {}),
-    ...(featured ? { featured: true } : {}),
-    ...(search
-      ? {
-          OR: [
-            { name: { contains: String(search), mode: "insensitive" } },
-            { description: { contains: String(search), mode: "insensitive" } },
-            { brand: { contains: String(search), mode: "insensitive" } },
-          ],
-        }
-      : {}),
-    ...(minPrice || maxPrice
-      ? {
-          price: {
-            gte: Number(minPrice || 0),
-            lte: Number(maxPrice || 999999),
-          },
-        }
-      : {}),
-  };
+    const filters = {
+      active: true,
+      ...(category ? { category: { slug: String(category) } } : {}),
+      ...(featured === "true" ? { featured: true } : {}),
+      ...(search
+        ? {
+            OR: [
+              { name: { contains: String(search) } },
+              { description: { contains: String(search) } },
+              { brand: { contains: String(search) } },
+            ],
+          }
+        : {}),
+      ...(minPrice || maxPrice
+        ? {
+            price: {
+              gte: Number(minPrice || 0),
+              lte: Number(maxPrice || 999999),
+            },
+          }
+        : {}),
+    };
 
-  const products = await prisma.product.findMany({
-    where: filters,
-    include: { category: true, images: true },
-    skip,
-    take: Number(limit),
-    orderBy:
-      sort === "price_asc"
-        ? { price: "asc" }
-        : sort === "price_desc"
-          ? { price: "desc" }
-          : { createdAt: "desc" },
-  });
+    const products = await prisma.product.findMany({
+      where: filters,
+      include: { category: true, images: true },
+      skip,
+      take: normalizedLimit,
+      orderBy:
+        sort === "price_asc"
+          ? { price: "asc" }
+          : sort === "price_desc"
+            ? { price: "desc" }
+            : { createdAt: "desc" },
+    });
 
-  const total = await prisma.product.count({ where: filters });
+    const total = await prisma.product.count({ where: filters });
 
-  res.json({
-    items: products.map(serializeProduct),
-    total,
-    page: Number(page),
-    limit: Number(limit),
-  });
+    res.json({
+      items: products.map(serializeProduct),
+      total,
+      page: normalizedPage,
+      limit: normalizedLimit,
+    });
+  } catch (error) {
+    console.error("Product listing error:", error);
+    res.status(500).json({ message: "Unable to load products" });
+  }
 });
 
 app.get("/api/products/:slug", async (req, res) => {
